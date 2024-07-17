@@ -1,0 +1,6 @@
+ansible-playbook --list-tags site.ymls
+ansible all -m gather_facts --limi 172.31.195.96 | grep ansible_distr
+ansible all -m ping
+ansible all -m apt -a update_cache=true
+ansible-playbook --tags redhat --ask-become-pass site.yml
+ansible-playbook --tags apache,ubuntu --ask-become-pass site.yml
