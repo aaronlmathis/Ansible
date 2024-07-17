@@ -4,10 +4,20 @@
   become: true
   tasks:
 
-  - name: remove apache / php package
-    package:
+  - name: remove apache / php package on UBUNTU
+    apt:
       name:
-        - "{{ apache_package }}"
-        - "{{ php_package }}"
+        - apache2
+        - libapache2-mod-php
       state: absent
+    when: ansible_distribution == "Ubuntu"
+
+  - name: remove apache / php package on Redhat
+    dnf:
+      name:
+        - httpd
+        - php
+      state: absent
+    when: ansible_distribution == "RedHat"
+
 
