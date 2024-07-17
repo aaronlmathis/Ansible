@@ -1,0 +1,3 @@
+alias runp=ansible-playbook --ask-become-pass
+alias runp=ansible-playbook --ask-become-pass
+alias runp='ansible-playbook --ask-become-pass'
