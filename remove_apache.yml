@@ -1,10 +1,11 @@
 ---
 
-- hosts: all
+- hosts: web_servers
   become: true
   tasks:
 
-  - name: remove apache / php package on UBUNTU
+  - name: uninstall apache / php package for Ubuntu Servers
+    tags: apache,apache2,ubuntu
     apt:
       name:
         - apache2
@@ -12,7 +13,8 @@
       state: absent
     when: ansible_distribution == "Ubuntu"
 
-  - name: remove apache / php package on Redhat
+  - name: uninstall apache and php for RedHat Servers
+    tags: apache,redhat,httpd
     dnf:
       name:
         - httpd
@@ -20,4 +22,30 @@
       state: absent
     when: ansible_distribution == "RedHat"
 
+- hosts: db_servers
+  become: true
+  tasks:
 
+  - name: uninstall mariadb package (RedHat)
+    tags: redhat,db,mariadb
+    dnf:
+      name: mariadb
+      state: absent
+    when: ansible_distribution == "RedHat"
+
+  - name: uninstall mariadb package (Ubuntu)
+    tags: db,mariadb,ubuntu
+    apt:
+      name: mariadb-server
+      state: absent
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: file_servers
+  become: true
+  tasks:
+
+  - name: Uninstall SAMBA
+    tags: samba
+    package:
+      name: samba
+      state: absent
