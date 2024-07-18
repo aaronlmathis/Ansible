@@ -3,3 +3,4 @@ apache_service: httpd
 php_package_name: php
 ssh_users: "aaron simone"
 ssh_template_file: sshd_config_redhat.j2
+ssh_service: sshd
