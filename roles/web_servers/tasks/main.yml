@@ -1,45 +1,27 @@
 
-- name: install apache / php package for Ubuntu Servers
-  tags: apache,apache2,ubuntu
-  apt:
+- name: install apache / php package
+  tags: apache,httpd,php
+  package:
     name:
-      - apache2
-      - libapache2-mod-php
+      - "{{ apache_package_name }}"
+      - "{{ php_package_name }}"
     state: latest
-  when: ansible_distribution == "Ubuntu"
 
-- name: install apache and php for RedHat Servers
-  tags: apache,redhat,httpd
-  dnf:
-    name:
-      - httpd
-      - php
-    state: latest
-  when: ansible_distribution == "RedHat"
-
-- name: Start HTTPD (RedHat)
-  tags: redhat, apaceh2,httpd
+- name: Start and enable apache
+  tags: apache2,httpd
   service:
-    name: httpd
+    name: "{{ apache_service }}"
     state: started
     enabled: yes
-  when: ansible_distribution == "RedHat"
 
 - name: change e-mail address for admin
   tags: apache,redhat,httpd
   lineinfile:
     path: /etc/httpd/conf/httpd.conf
     regexp: '^ServerAdmin'
-    line: ServerAdmin admin@deepthought.live
+    line: ServerAdmin admin1@deepthought.com
   when: ansible_distribution == "RedHat"
-  register: httpd
-
-- name: restart httpd (RedHat)
-  tags: apache,redhat,httpd
-  service:
-    name: httpd
-    state: restarted
-  when: httpd.changed
+  notify: restart_apache
 
 - name: copy default html file for site
   tags: apache,apache2,httpd
