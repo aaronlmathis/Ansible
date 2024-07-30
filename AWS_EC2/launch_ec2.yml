@@ -49,6 +49,17 @@
       loop: "{{ instance_info.instances }}"
       when: item.public_ip_address is defined
 
+    - name: Write instance details to a file
+      copy:
+        content: |
+          Instance ID: {{ item.instance_id }}
+          Public IP: {{ item.public_ip_address }}
+          Private IP: {{ item.private_ip_address }}
+        dest: ~/instance_details.txt
+        mode: '0644'
+      loop: "{{ instance_info.instances }}"
+      when: item.public_ip_address is defined
+
 - name: Configure launched instances
   hosts: launched
   become: yes
