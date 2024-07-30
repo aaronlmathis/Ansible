@@ -1,0 +1,5 @@
+# ../vars/aws_vars.yml
+aws_region: us-west-2
+aws_ami: ami-0abcdef1234567890
+aws_instance_type: t2.micro
+aws_key_name: your-key-pair
