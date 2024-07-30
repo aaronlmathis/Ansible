@@ -1,3 +1,4 @@
+
 ---
 - name: Launch EC2 instances
   hosts: localhost
@@ -6,26 +7,26 @@
     - ../../vars/aws_vars.yml
   tasks:
     - name: Launch an EC2 instance
-      ec2:
+      amazon.aws.ec2_instance:
         key_name: "{{ aws_key_name }}"
         instance_type: "{{ aws_instance_type }}"
-        image: "{{ aws_ami }}"
+        image_id: "{{ aws_ami }}"
         region: "{{ aws_region }}"
         wait: yes
         count: 1
-        instance_tags:
+        tags:
           Name: AnsibleProvisionedServer
       register: ec2
 
     - name: Add new instance to host group
       add_host:
-        hostname: "{{ item.public_dns_name }}"
+        hostname: "{{ item.public_ip }}"
         groups: launched
       loop: "{{ ec2.instances }}"
 
     - name: Wait for SSH to come up
       wait_for:
-        host: "{{ item.public_dns_name }}"
+        host: "{{ item.public_ip }}"
         port: 22
         delay: 60
         timeout: 320
