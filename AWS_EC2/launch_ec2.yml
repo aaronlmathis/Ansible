@@ -62,6 +62,15 @@
       loop: "{{ instance_info.instances }}"
       when: item.public_ip_address is defined
 
+    - name: Generate Ansible inventory file
+      copy:
+        dest: ./hosts
+        content: |
+          [launched]
+          {% for instance in instance_info.instances %}
+          {{ instance.public_ip_address }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/ansible.pem
+          {% endfor %}
+
 - name: Configure launched instances
   hosts: launched
   become: yes
