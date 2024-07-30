@@ -1,6 +1,6 @@
 # ../vars/aws_vars.yml
 aws_region: us-west-2
-aws_ami: ami-0583d8c7a9c35822c
+aws_ami: ami-04a81a99f5ec58529
 aws_instance_type: t2.micro
 aws_key_name: your-key-pair.pem
 aws_security_group: ansible-default-group
