@@ -17,11 +17,27 @@
           Name: AnsibleProvisionedServer
       register: ec2
 
+    - name: Wait until the instance is running
+      amazon.aws.ec2_instance_info:
+        region: "{{ aws_region }}"
+        instance_ids: "{{ ec2.instance_ids }}"
+      register: instance_info
+      until: instance_info.instances[0].state.name == 'running'
+      retries: 10
+      delay: 30
+
+    - name: Refresh instance information
+      amazon.aws.ec2_instance_info:
+        region: "{{ aws_region }}"
+        instance_ids: "{{ ec2.instance_ids }}"
+      register: instance_info
+
     - name: Add new instance to host group
       add_host:
         hostname: "{{ item.public_ip_address }}"
         groups: launched
-      loop: "{{ ec2.instances }}"
+      loop: "{{ instance_info.instances }}"
+      when: item.public_ip_address is defined
 
     - name: Wait for SSH to come up
       wait_for:
@@ -30,7 +46,8 @@
         delay: 60
         timeout: 320
         state: started
-      loop: "{{ ec2.instances }}"
+      loop: "{{ instance_info.instances }}"
+      when: item.public_ip_address is defined
 
 - name: Configure launched instances
   hosts: launched
