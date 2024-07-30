@@ -1,0 +1,25 @@
+---
+- name: Terminate EC2 instances
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - ../../vars/aws_vars.yml
+  tasks:
+    - name: Terminate EC2 instances
+      amazon.aws.ec2_instance:
+        region: "{{ aws_region }}"
+        instance_ids: "{{ aws_instance_ids }}"
+        state: terminated
+      register: terminate_result
+
+    - name: Wait for instances to terminate
+      amazon.aws.ec2_instance_info:
+        region: "{{ aws_region }}"
+        instance_ids: "{{ aws_instance_ids }}"
+      register: ec2_info
+      until: ec2_info.instances | map(attribute='state.name') | list | unique == ['terminated']
+      retries: 10
+      delay: 30
+
+    - debug:
+        msg: "Instances {{ aws_instance_ids }} have been terminated."

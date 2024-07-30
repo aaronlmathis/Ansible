@@ -3,3 +3,5 @@ aws_region: us-west-2
 aws_ami: ami-0abcdef1234567890
 aws_instance_type: t2.micro
 aws_key_name: your-key-pair
+aws_instance_ids:
+  - i-05525f697c7c3052c  # Replace with the actual instance IDs
