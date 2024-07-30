@@ -9,7 +9,7 @@ get_latest_ami() {
   ami_id=$(aws ec2 describe-images \
     --region $region \
     --owners amazon \
-    --filters "Name=name,Values=RHEL-9*-x86_64-HVM-*" \
+    --filters "Name=description,Values=Red Hat Enterprise Linux version 9 (HVM), EBS General Purpose (SSD) Volume Type" \
     --query "Images | sort_by(@, &CreationDate) | [-1].ImageId" \
     --output text)
   echo "Latest AMI ID for Red Hat Enterprise Linux 9 (HVM) in $region: $ami_id"
