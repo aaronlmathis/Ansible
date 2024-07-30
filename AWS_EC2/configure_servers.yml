@@ -1,21 +1,4 @@
-- name: Configure launched instances
-  hosts: launched
-  become: yes
-  remote_user: ubuntu  # Use 'ubuntu' user for Ubuntu servers
-  vars:
-    ansible_ssh_private_key_file: ~/.ssh/ansible.pem
-  tasks:
-    - name: Update apt cache
-      apt:
-        update_cache: yes
-
-    - name: Install Nginx
-      apt:
-        name: nginx
-        state: present
-
-    - name: Start Nginx service
-      service:
-        name: nginx
-        state: started
-        enabled: yes
+- hosts: launched
+  become: true
+  roles:
+    - nginx
