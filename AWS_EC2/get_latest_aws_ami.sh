@@ -9,14 +9,13 @@ get_latest_ami() {
   ami_id=$(aws ec2 describe-images \
     --region $region \
     --owners amazon \
-    --filters "Name=name,Values=amzn2-ami-hvm-2.0.*-x86_64-gp2" \
+    --filters "Name=name,Values=RHEL-9*-x86_64-HVM-*" \
     --query "Images | sort_by(@, &CreationDate) | [-1].ImageId" \
     --output text)
-  echo "Latest AMI ID in $region: $ami_id"
+  echo "Latest AMI ID for Red Hat Enterprise Linux 9 (HVM) in $region: $ami_id"
 }
 
 # Iterate over each region and get the latest AMI ID
 for region in $regions; do
   get_latest_ami $region
 done
-
