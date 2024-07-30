@@ -13,6 +13,8 @@
         region: "{{ aws_region }}"
         wait: yes
         count: 1
+        vpc_subnet_id: "{{ aws_subnet_id }}"  # Add this line if you need to specify a subnet
+        security_group: "{{ aws_security_group }}"  # Specify the security group
         tags:
           Name: AnsibleProvisionedServer
       register: ec2
@@ -23,8 +25,8 @@
         instance_ids: "{{ ec2.instance_ids }}"
       register: instance_info
       until: instance_info.instances[0].state.name == 'running'
-      retries: 10
-      delay: 30
+      retries: 15
+      delay: 40
 
     - name: Refresh instance information
       amazon.aws.ec2_instance_info:
@@ -44,7 +46,7 @@
         host: "{{ item.public_ip_address }}"
         port: 22
         delay: 60
-        timeout: 320
+        timeout: 600
         state: started
       loop: "{{ instance_info.instances }}"
       when: item.public_ip_address is defined
