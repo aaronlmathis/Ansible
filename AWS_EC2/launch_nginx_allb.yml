@@ -1,25 +1,25 @@
 ---
-- name: Launch EC2 instances
+- name: Launch and configure EC2 instances and ELB
   hosts: localhost
   gather_facts: no
   vars_files:
     - ../../vars/aws_vars.yml
   tasks:
-    - name: Launch an EC2 instance
+    - name: Launch EC2 instances
       amazon.aws.ec2_instance:
-        key_name: "{{ aws_key_name }}"
+        key_name: "{{ aws_key_name }}"  # Ensure this matches the key pair name in AWS
         instance_type: "{{ aws_instance_type }}"
-        image_id: "{{ aws_ami }}"
+        image_id: "{{ ubuntu_ami }}"  # Use the correct AMI ID for Ubuntu
         region: "{{ aws_region }}"
         wait: yes
-        count: 1
-        vpc_subnet_id: "{{ aws_subnet_id }}"  # Add this line if you need to specify a subnet
-        security_group: "{{ aws_security_group }}"  # Specify the security group
+        count: 3
+        vpc_subnet_id: "{{ aws_subnet_id }}"
+        security_group: "{{ aws_security_group }}"
         tags:
           Name: AnsibleProvisionedServer
       register: ec2
 
-    - name: Wait until the instance is running
+    - name: Wait until the instances are running
       amazon.aws.ec2_instance_info:
         region: "{{ aws_region }}"
         instance_ids: "{{ ec2.instance_ids }}"
@@ -34,7 +34,7 @@
         instance_ids: "{{ ec2.instance_ids }}"
       register: instance_info
 
-    - name: Add new instance to host group
+    - name: Add new instances to host group
       add_host:
         hostname: "{{ item.public_ip_address }}"
         groups: launched
@@ -61,6 +61,55 @@
         mode: '0644'
       loop: "{{ instance_info.instances }}"
       when: item.public_ip_address is defined
+
+    - name: Allow HTTP and HTTPS access in the security group
+      amazon.aws.ec2_group:
+        name: "{{ aws_security_group }}"
+        region: "{{ aws_region }}"
+        rules:
+          - proto: tcp
+            ports:
+              - 80
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            ports:
+              - 443
+            cidr_ip: 0.0.0.0/0
+        rules_egress:
+          - proto: all
+            ports: all
+            cidr_ip: 0.0.0.0/0
+        state: present
+
+    - name: Create ELB
+      amazon.aws.elb_load_balancer:
+        name: ansible-elb
+        state: present
+        region: "{{ aws_region }}"
+        zones:
+          - "{{ aws_region }}a"
+        listeners:
+          - protocol: HTTP
+            load_balancer_port: 80
+            instance_port: 80
+        health_check:
+          ping_protocol: HTTP
+          ping_port: 80
+          ping_path: /
+          response_timeout: 5
+          interval: 30
+          unhealthy_threshold: 2
+          healthy_threshold: 2
+        security_group_names: ["{{ aws_security_group }}"]
+        wait: yes
+      register: elb
+
+    - name: Register instances with ELB
+      amazon.aws.elb_instance:
+        name: ansible-elb
+        instances: "{{ ec2.instance_ids }}"
+        state: present
+        region: "{{ aws_region }}"
 
 - name: Configure launched instances
   hosts: launched
