@@ -1,0 +1,9 @@
+---
+- name: Flask Setup
+  hosts: launched
+  become: yes
+  vars_files:
+    - ../vars/aws_vars.yml
+  tasks:
+    - import_role:
+        name: flask_setup

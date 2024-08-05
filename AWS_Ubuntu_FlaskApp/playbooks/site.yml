@@ -1,0 +1,16 @@
+---
+- name: AWS Provisioning and Flask Setup
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - ../vars/aws_vars.yml
+  roles:
+    - aws_provision
+
+- name: Configure Flask Setup on Launched Instances
+  hosts: launched
+  become: yes
+  vars_files:
+    - ../vars/aws_vars.yml
+  roles:
+    - flask_setup

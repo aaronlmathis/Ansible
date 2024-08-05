@@ -1,0 +1,39 @@
+---
+- name: Launch EC2 instances
+  amazon.aws.ec2_instance:
+    key_name: "{{ aws_key_name }}"
+    instance_type: "{{ aws_instance_type }}"
+    image_id: "{{ aws_ami }}"
+    region: "{{ aws_region }}"
+    wait: yes
+    count: 1
+    vpc_subnet_id: "{{ aws_subnet_id }}"
+    security_groups: [ "{{ aws_security_group }}" ]
+    tags:
+      Name: FlaskServer
+  register: ec2
+
+- name: Wait until the instances are running
+  amazon.aws.ec2_instance_info:
+    region: "{{ aws_region }}"
+    instance_ids: "{{ ec2.instance_ids }}"
+  register: instance_info
+  until: instance_info.instances | selectattr('state.name', 'equalto', 'running') | list | length == ec2.instance_ids | length
+  retries: 15
+  delay: 40
+
+- name: Add new instances to host group
+  add_host:
+    hostname: "{{ item.public_ip_address }}"
+    groups: launched
+  loop: "{{ instance_info.instances }}"
+  when: item.public_ip_address is defined
+
+- name: Generate Ansible inventory file
+  copy:
+    dest: ./hosts
+    content: |
+      [launched]
+      {% for instance in instance_info.instances %}
+      {{ instance.public_ip_address }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/{{ aws_key_file }}
+      {% endfor %}

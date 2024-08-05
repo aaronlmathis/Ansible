@@ -1,0 +1,9 @@
+---
+- name: AWS Provisioning
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - ../vars/aws_vars.yml
+  tasks:
+    - import_role:
+        name: aws_provision

@@ -1,0 +1,71 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: Install necessary packages
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - python3-pip
+    - python3-dev
+    - nginx
+    - git
+  become: yes
+
+- name: Install Gunicorn
+  pip:
+    name: gunicorn
+    state: present
+  become: yes
+
+- name: Clone Flask app repository
+  git:
+    repo: 'https://github.com/aaronlmathis/flaskapp.git'
+    dest: /home/ubuntu/yourflaskapp
+  become: yes
+
+- name: Install Flask requirements
+  pip:
+    requirements: /home/ubuntu/yourflaskapp/requirements.txt
+  become: yes
+
+- name: Configure Gunicorn systemd service
+  template:
+    src: flask_app.service.j2
+    dest: /etc/systemd/system/flask_app.service
+  become: yes
+
+- name: Start and enable Gunicorn service
+  systemd:
+    name: flask_app
+    state: started
+    enabled: yes
+  become: yes
+
+- name: Configure Nginx
+  template:
+    src: nginx_flask.j2
+    dest: /etc/nginx/sites-available/flask_app
+  become: yes
+
+- name: Enable Nginx configuration
+  file:
+    src: /etc/nginx/sites-available/flask_app
+    dest: /etc/nginx/sites-enabled/flask_app
+    state: link
+  become: yes
+
+- name: Remove default Nginx configuration
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  become: yes
+
+- name: Restart Nginx
+  service:
+    name: nginx
+    state: restarted
+  become: yes

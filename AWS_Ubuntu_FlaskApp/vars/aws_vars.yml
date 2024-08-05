@@ -1,0 +1,7 @@
+aws_region: us-east-1
+aws_ami: ami-04a81a99f5ec58529
+aws_instance_type: t2.micro
+aws_key_name: aaron-windows
+aws_key_file: aaron-windows.pem
+aws_security_group: ansible-default-group
+aws_subnet_id: subnet-01e19b29a5fb17b66
