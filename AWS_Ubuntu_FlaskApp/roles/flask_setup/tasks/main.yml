@@ -15,16 +15,13 @@
   loop:
     - python3.11
     - python3.11-venv
+    - python3.11-dev
     - python3-pip
-    - python3-dev
+    - libpq-dev
     - nginx
     - git
-
-- name: Update alternatives to set python3.11 as the default
-  alternatives:
-    name: python3
-    path: /usr/bin/python3.11
-  become: yes
+    - build-essential
+    - gcc
 
 - name: Clone Flask app repository
   git:
@@ -32,10 +29,24 @@
     dest: /home/ubuntu/flaskapp
 
 - name: Create a virtual environment for Flask app
-  command: python3.11 -m venv /home/ubuntu/flaskapp/venv
+  command: /usr/bin/python3.11 -m venv /home/ubuntu/flaskapp/venv
 
 - name: Install Gunicorn in virtual environment
   command: /home/ubuntu/flaskapp/venv/bin/pip install gunicorn
+
+- name: Ensure Python and PostgreSQL development libraries are installed
+  apt:
+    name:
+      - python3-dev
+      - libpq-dev
+      - gcc
+    state: present
+    update_cache: yes
+
+- name: Install Flask requirements in virtual environment
+  pip:
+    requirements: /home/ubuntu/flaskapp/requirements.txt
+    virtualenv: /home/ubuntu/flaskapp/venv
 
 - name: Install Flask requirements in virtual environment
   command: /home/ubuntu/flaskapp/venv/bin/pip install -r /home/ubuntu/flaskapp/requirements.txt
