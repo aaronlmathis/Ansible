@@ -10,6 +10,7 @@
 - name: Configure Flask Setup on Launched Instances
   hosts: launched
   become: yes
+  become_method: sudo
   vars_files:
     - ../vars/aws_vars.yml
   roles:

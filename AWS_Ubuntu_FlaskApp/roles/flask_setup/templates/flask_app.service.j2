@@ -5,8 +5,8 @@ After=network.target
 [Service]
 User=ubuntu
 Group=www-data
-WorkingDirectory=/home/ubuntu/yourflaskapp
-ExecStart=/usr/local/bin/gunicorn --workers 3 --bind unix:flaskapp.sock -m 007 wsgi:app
+WorkingDirectory=/home/ubuntu/flaskapp
+ExecStart=/home/ubuntu/flaskapp/venv/bin/gunicorn --workers 3 --bind unix:/home/ubuntu/flaskapp/flaskapp.sock app:app
 
 [Install]
 WantedBy=multi-user.target
