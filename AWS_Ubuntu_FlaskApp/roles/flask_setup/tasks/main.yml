@@ -1,4 +1,9 @@
 ---
+- name: Add deadsnakes PPA
+  apt_repository:
+    repo: ppa:deadsnakes/ppa
+    state: present
+
 - name: Update apt cache
   apt:
     update_cache: yes
@@ -8,21 +13,31 @@
     name: "{{ item }}"
     state: present
   loop:
+    - python3.11
+    - python3.11-venv
     - python3-pip
     - python3-dev
     - nginx
     - git
-    - python3-venv
+
+- name: Update alternatives to set python3.11 as the default
+  alternatives:
+    name: python3
+    path: /usr/bin/python3.11
+  become: yes
 
 - name: Clone Flask app repository
   git:
-    repo: 'https://github.com/bohwaz/flask-app-example.git'
+    repo: 'https://github.com/miguelgrinberg/flasky.git'
     dest: /home/ubuntu/flaskapp
 
 - name: Create a virtual environment for Flask app
-  command: python3 -m venv /home/ubuntu/flaskapp/venv
+  command: python3.11 -m venv /home/ubuntu/flaskapp/venv
 
-- name: Install Gunicorn and Flask requirements in virtual environment
+- name: Install Gunicorn in virtual environment
+  command: /home/ubuntu/flaskapp/venv/bin/pip install gunicorn
+
+- name: Install Flask requirements in virtual environment
   command: /home/ubuntu/flaskapp/venv/bin/pip install -r /home/ubuntu/flaskapp/requirements.txt
 
 - name: Configure Gunicorn systemd service
