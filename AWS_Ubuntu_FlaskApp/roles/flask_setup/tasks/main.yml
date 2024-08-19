@@ -1,9 +1,4 @@
 ---
-- name: Add deadsnakes PPA
-  apt_repository:
-    repo: ppa:deadsnakes/ppa
-    state: present
-
 - name: Update apt cache
   apt:
     update_cache: yes
@@ -13,43 +8,39 @@
     name: "{{ item }}"
     state: present
   loop:
-    - python3.11
-    - python3.11-venv
-    - python3.11-dev
+    - python3
+    - python3-venv
     - python3-pip
-    - libpq-dev
     - nginx
     - git
-    - build-essential
-    - gcc
 
 - name: Clone Flask app repository
   git:
-    repo: 'https://github.com/miguelgrinberg/flasky.git'
+    repo: 'https://github.com/aaronlmathis/flaskapp.git'
     dest: /home/ubuntu/flaskapp
+    version: main
 
 - name: Create a virtual environment for Flask app
-  command: /usr/bin/python3.11 -m venv /home/ubuntu/flaskapp/venv
+  command:
+    cmd: python3 -m venv /home/ubuntu/flaskapp/venv
+    creates: /home/ubuntu/flaskapp/venv
 
 - name: Install Gunicorn in virtual environment
-  command: /home/ubuntu/flaskapp/venv/bin/pip install gunicorn
-
-- name: Ensure Python and PostgreSQL development libraries are installed
-  apt:
-    name:
-      - python3-dev
-      - libpq-dev
-      - gcc
-    state: present
-    update_cache: yes
+  pip:
+    name: gunicorn
+    virtualenv: /home/ubuntu/flaskapp/venv
 
 - name: Install Flask requirements in virtual environment
   pip:
     requirements: /home/ubuntu/flaskapp/requirements.txt
     virtualenv: /home/ubuntu/flaskapp/venv
 
-- name: Install Flask requirements in virtual environment
-  command: /home/ubuntu/flaskapp/venv/bin/pip install -r /home/ubuntu/flaskapp/requirements.txt
+- name: Ensure correct ownership of Flask app directory
+  file:
+    path: /home/ubuntu/flaskapp
+    owner: ubuntu
+    group: ubuntu
+    recurse: yes
 
 - name: Configure Gunicorn systemd service
   template:
